@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Todo from "./Todo";
 import axios from "axios";
 import { database } from "../../firebase";
-import { ref, remove } from "firebase/database";
+import { ref, remove, update } from "firebase/database";
 
 const TodoList = () => {
   const [todos, setTodos] = useState(null);
@@ -28,12 +28,12 @@ const TodoList = () => {
     return () => {};
   }, []);
 
-  const todoDeleteHandler = (todoId) => {
-    const todoItem = Object.entries(todos).find(([id, todo]) => id === todoId);
-
-    if (todoItem) {
-      const [id, todo] = todoItem;
-      const todoRef = ref(database, `todos/${id}`);
+  const todoDeleteHandler = async (todoId) => {
+    try {
+      const response = await axios.delete(
+        `https://app-login-firebase-ef638-default-rtdb.firebaseio.com/todos/${todoId}.json`
+      );
+      const todoRef = ref(database, `todos/${todoId}`);
 
       remove(todoRef)
         .then(() => {
@@ -42,9 +42,29 @@ const TodoList = () => {
         .catch((error) => {
           console.log("Todo delete Failed!", error);
         });
-    } else {
-      console.log("Todo item not found with ID:", todoId);
+
+      console.log("Todo delete successfully", response);
+    } catch (error) {
+      console.log("Todo delete Failed!", error);
     }
+  };
+
+  const todoUpdateHandler = (todoId) => {
+    const todoRef = ref(database, `todos/${todoId}`);
+
+    const updateData = {
+      id: 2,
+      text: "Update Todo",
+      completed: false,
+    };
+
+    update(todoRef, updateData)
+      .then(() => {
+        console.log("Todo update successfully");
+      })
+      .catch((error) => {
+        console.log("Todo update Failed!", error);
+      });
   };
 
   return (
@@ -65,6 +85,7 @@ const TodoList = () => {
                     todo={value.text}
                     completed={value.completed}
                     onDelete={() => todoDeleteHandler(todoId)}
+                    onUpdate={() => todoUpdateHandler(todoId)}
                   />
                 ))}
               </div>

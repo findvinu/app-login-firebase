@@ -20,7 +20,7 @@ const AddTodos = () => {
     push(todoRef, todo);
     setNewTodo("");
   };
-  console.log("isCompleted", isCompleted);
+
   return (
     <div className="addTodos">
       <div className="py-8">
